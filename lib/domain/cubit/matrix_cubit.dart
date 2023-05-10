@@ -1,47 +1,40 @@
+import 'dart:math';
+
+import 'package:algorithm_visualizer/core/results.dart';
 import 'package:bloc/bloc.dart';
+import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:collection/collection.dart';
 
-import '../entities/nodes.dart';
+import '../entities/node.dart';
 
 part 'matrix_state.dart';
 
 class MatrixCubit extends Cubit<MatrixState> {
-  static const int MAX_ITEM_SIZE = 40;
-  static const int MIN_ITEM_SIZE = 10;
   MatrixCubit() : super(LoadingMatrix());
 
-  void initMatrix(Size size) {
-    final screenWidth = size.width;
-    final screenHeight = size.height;
+  void initMatrix({int x = 30, int y = 35}) {
+    final matrix = List.generate(y, (_) => List.generate(x, (_) => const Node(NodeType.unvisited)));
+    emit(DisplayMatrix(matrix: matrix, updateFlag: false));
+  }
 
-    // calculate the maximum number of rows and columns for the matrix based on the screen size
-    final maxCols = (screenWidth / MIN_ITEM_SIZE).floor();
-    final maxRows = (screenHeight / MIN_ITEM_SIZE).floor();
-    final minCols = (screenWidth / MAX_ITEM_SIZE).ceil();
-    final minRows = (screenHeight / MAX_ITEM_SIZE).ceil();
+  Either<Success, Failure> setNode(int i, int j, Node node) {
+    if (state is DisplayMatrix) {
+      List<List<Node>> updatedMatrix = List<List<Node>>.from((state as DisplayMatrix).matrix);
+      updatedMatrix[i][j] = node;
+      emit(DisplayMatrix(matrix: updatedMatrix, updateFlag: !(state as DisplayMatrix).updateFlag));
+      return Left(GeneralSuccess());
+    } else {
+      return Right(NoneFailure());
+    }
+  }
 
-    // start with the maximum number of columns and decrease until the matrix fits on the screen
-    int cols = maxCols;
-    int rows = maxRows;
-
-    // while (cols >= minCols && rows >= minRows) {
-    //   final itemSize = screenWidth / cols;
-    //   final numRows = (screenHeight / itemSize).floor();
-
-    //   if (numRows * cols <= maxCols * maxRows) {
-    //     rows = numRows;
-    //     break;
-    //   }
-
-    //   cols -= 1;
-    // }
-
-    // create the matrix with the calculated dimensions
-    final matrix = List.generate(rows, (_) => List.generate(cols, (_) => Node(NodeType.blank)));
-
-    // print(matrix);
-    // initialize the matrix size with the calculated dimensions
-    emit(DisplayMatrix(matrix: matrix));
+  Either<Node, Failure> getNode(int i, int j) {
+    if (state is DisplayMatrix) {
+      return Left((state as DisplayMatrix).matrix[i][j]);
+    } else {
+      return Right(NoneFailure());
+    }
   }
 }
