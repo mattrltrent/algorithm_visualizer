@@ -6,10 +6,9 @@ import '../domain/entities/node.dart';
 class Bfs extends Algorithm {
   @override
   AlgorithmStats run(List<List<Node>> input) {
-    print('Running BFS');
+    // todo: provided the `input` matrix, return `AlgorithmStats` object.
+    // Example (trivial) output:
     return const AlgorithmStats(
-      visitedNodes: 0,
-      pathLength: 0,
       timeTakenMs: 0,
       path: Right([]),
     );

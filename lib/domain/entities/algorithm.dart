@@ -3,19 +3,20 @@ import 'package:dartz/dartz.dart';
 
 import 'node.dart';
 
+/// Interface for how to implement algorithm solutions adhering to the grid visualization.
 abstract class Algorithm {
   AlgorithmStats run(List<List<Node>> input);
 }
 
+/// Algorithm statistics.
+///
+/// [path] is either a list of [MatrixUpdate]s found during pathfinding, or a [NoPathFailure].
+/// [timeTakenMs] is the time taken to run the algorithm in milliseconds.
 class AlgorithmStats {
-  final int visitedNodes;
-  final int pathLength;
   final int timeTakenMs;
   final Either<NoPathFailure, List<MatrixUpdate>> path;
 
   const AlgorithmStats({
-    required this.visitedNodes,
-    required this.pathLength,
     required this.timeTakenMs,
     required this.path,
   });

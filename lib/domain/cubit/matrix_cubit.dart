@@ -4,8 +4,6 @@ import 'package:algorithm_visualizer/core/results.dart';
 import 'package:bloc/bloc.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
-import 'package:collection/collection.dart';
 
 import '../entities/node.dart';
 
@@ -26,7 +24,7 @@ class MatrixCubit extends Cubit<MatrixState> {
       emit(DisplayMatrix(matrix: updatedMatrix, updateFlag: !(state as DisplayMatrix).updateFlag));
       return Left(GeneralSuccess());
     } else {
-      return Right(NoneFailure());
+      return Right(GeneralFailure());
     }
   }
 
@@ -35,6 +33,22 @@ class MatrixCubit extends Cubit<MatrixState> {
       return Left((state as DisplayMatrix).matrix[i][j]);
     } else {
       return Right(NoneFailure());
+    }
+  }
+
+  Either<Failure, Point> nodeExists(NodeType node) {
+    if (state is DisplayMatrix) {
+      final matrix = (state as DisplayMatrix).matrix;
+      for (var i = 0; i < matrix.length; i++) {
+        for (var j = 0; j < matrix[0].length; j++) {
+          if (matrix[i][j].type == node) {
+            return Right(Point(i, j));
+          }
+        }
+      }
+      return Left(NoneFailure());
+    } else {
+      return Left(GeneralFailure());
     }
   }
 }
