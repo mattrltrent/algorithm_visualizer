@@ -14,15 +14,15 @@ class EditorAppBar extends StatefulWidget {
 }
 
 class EditorAppBarState extends State<EditorAppBar> {
-  int _selectedButtonIndex = 3;
-  final List<String> _nodeNames = ['Start', 'End', 'Visited', 'Wall'];
-  final List<NodeType> _buttonColors = [NodeType.start, NodeType.end, NodeType.visited, NodeType.wall];
+  int _selectedButtonIndex = 2;
+  final List<String> _nodeNames = ["Start", "End", "Wall", "Clear"];
+  final List<NodeType> _buttonColors = [NodeType.start, NodeType.end, NodeType.wall, NodeType.cell];
 
   void _toggleButton(int index) {
     setState(() {
       if (_selectedButtonIndex == index) {
-        // if the same button is tapped twice, unselect it
-        widget.onNodeSelected(NodeType.unvisited);
+        // todo: make this do no editing instead
+        widget.onNodeSelected(NodeType.cell);
         _selectedButtonIndex = -1;
       } else {
         widget.onNodeSelected(_buttonColors[index]);

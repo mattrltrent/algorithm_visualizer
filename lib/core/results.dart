@@ -1,15 +1,21 @@
+abstract class Result {}
+
 //! Failures
 
-abstract class Failure {}
+abstract class Failure extends Result {}
 
-class GeneralFailure extends Failure {}
-
-class NoneFailure extends Failure {}
+class BadState extends Failure {}
 
 class NoPathFailure extends Failure {}
 
 //! Successes
 
-abstract class Success {}
+abstract class Success extends Result {}
 
 class GeneralSuccess extends Success {}
+
+//! Result
+
+abstract class General extends Result {}
+
+class Nothing extends General {}

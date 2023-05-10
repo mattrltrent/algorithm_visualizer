@@ -13,7 +13,7 @@ class MatrixCubit extends Cubit<MatrixState> {
   MatrixCubit() : super(LoadingMatrix());
 
   void initMatrix({int x = 30, int y = 35}) {
-    final matrix = List.generate(y, (_) => List.generate(x, (_) => const Node(NodeType.unvisited)));
+    final matrix = List.generate(y, (_) => List.generate(x, (_) => const Node(NodeType.cell)));
     emit(DisplayMatrix(matrix: matrix, updateFlag: false));
   }
 
@@ -24,19 +24,19 @@ class MatrixCubit extends Cubit<MatrixState> {
       emit(DisplayMatrix(matrix: updatedMatrix, updateFlag: !(state as DisplayMatrix).updateFlag));
       return Left(GeneralSuccess());
     } else {
-      return Right(GeneralFailure());
+      return Right(BadState());
     }
   }
 
-  Either<Node, Failure> getNode(int i, int j) {
+  Either<Node, Result> getNode(int i, int j) {
     if (state is DisplayMatrix) {
       return Left((state as DisplayMatrix).matrix[i][j]);
     } else {
-      return Right(NoneFailure());
+      return Right(Nothing());
     }
   }
 
-  Either<Failure, Point> nodeExists(NodeType node) {
+  Either<Result, Point<int>> nodeExists(NodeType node) {
     if (state is DisplayMatrix) {
       final matrix = (state as DisplayMatrix).matrix;
       for (var i = 0; i < matrix.length; i++) {
@@ -46,9 +46,9 @@ class MatrixCubit extends Cubit<MatrixState> {
           }
         }
       }
-      return Left(NoneFailure());
+      return Left(Nothing());
     } else {
-      return Left(GeneralFailure());
+      return Left(BadState());
     }
   }
 }

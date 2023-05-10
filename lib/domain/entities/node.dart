@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
 enum NodeType {
-  unvisited,
+  cell,
   visited,
   wall,
   start,
@@ -19,12 +19,12 @@ class Node extends Equatable {
 extension NodeTypeColor on NodeType {
   Color get color {
     switch (this) {
-      case NodeType.unvisited:
+      case NodeType.cell:
         return Colors.white;
       case NodeType.visited:
         return Colors.orange;
       case NodeType.wall:
-        return Colors.grey;
+        return Colors.black;
       case NodeType.start:
         return Colors.green;
       case NodeType.end:
