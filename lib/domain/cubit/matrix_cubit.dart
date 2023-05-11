@@ -15,15 +15,15 @@ part 'matrix_state.dart';
 class MatrixCubit extends Cubit<MatrixState> {
   MatrixCubit() : super(LoadingMatrix());
 
-  void initMatrix({int n = 10}) {
+  void initMatrix({int n = 40}) {
     final matrix = List.generate(n, (_) => List.generate(n, (_) => const Node(NodeType.cell)));
     emit(DisplayMatrix(matrix: matrix, updateFlag: false, isVisualizing: false));
   }
 
-  Either<Success, Failure> setNode(int i, int j, NodeType nodeType) {
+  Either<Success, Failure> setNode(int i, int j, Node node) {
     if (state is DisplayMatrix) {
       List<List<Node>> updatedMatrix = List<List<Node>>.from((state as DisplayMatrix).matrix);
-      updatedMatrix[i][j] = Node(nodeType);
+      updatedMatrix[i][j] = node;
       emit(DisplayMatrix(
           matrix: updatedMatrix,
           updateFlag: !(state as DisplayMatrix).updateFlag,
@@ -67,27 +67,33 @@ class MatrixCubit extends Cubit<MatrixState> {
     }
   }
 
-  Future<Result> visualizeAlgorithm(List<MatrixUpdate> path,
-      {Duration blockPlacingDelay = const Duration(milliseconds: 5)}) async {
+  Future<Result> visualizeAlgorithm(List<MatrixUpdate> path, {int blockPlacingMultiplier = 1}) async {
     final currentState = state as DisplayMatrix;
     if (currentState.isVisualizing) return AlreadyVisualizing();
     final newState = currentState.copyWith(isVisualizing: true);
     emit(newState);
-
-    int currentBlockIndex = 0;
-    Timer.periodic(blockPlacingDelay, (timer) {
-      if (currentBlockIndex >= path.length) {
-        timer.cancel();
-        emit(currentState.copyWith(isVisualizing: false));
-        return;
+    int idx = 0;
+    await Future.delayed(const Duration(milliseconds: 250)); // give time for cleared board to be seen
+    List paths = [];
+    for (final update in path) {
+      if (update.updatedTo == NodeType.path) {
+        paths.add(update);
+      } else {
+        setNode(update.row, update.col,
+            Node(update.updatedTo, delay: Duration(milliseconds: blockPlacingMultiplier * idx)));
+        idx++;
       }
-
-      final currentBlock = path[currentBlockIndex];
-      setNode(currentBlock.row, currentBlock.col, currentBlock.updatedTo);
-      currentBlockIndex++;
-    });
-
-    return PathFound();
+    }
+    await Future.delayed(Duration(milliseconds: blockPlacingMultiplier * idx));
+    idx = 0;
+    for (final update in paths) {
+      setNode(
+          update.row, update.col, Node(update.updatedTo, delay: Duration(milliseconds: blockPlacingMultiplier * idx)));
+      idx++;
+    }
+    // add all paths
+    emit(currentState.copyWith(isVisualizing: false));
+    return GeneralSuccess();
   }
 
   Result resetMatrixAfterRunning() {
@@ -96,10 +102,11 @@ class MatrixCubit extends Cubit<MatrixState> {
       for (var i = 0; i < matrix.length; i++) {
         for (var j = 0; j < matrix[0].length; j++) {
           if (matrix[i][j].type == NodeType.visited || matrix[i][j].type == NodeType.path) {
-            setNode(i, j, NodeType.cell);
+            setNode(i, j, const Node(NodeType.cell));
           }
         }
       }
+      emit((state as DisplayMatrix)); // todo: needed?
       return GeneralSuccess();
     } else {
       return BadState();

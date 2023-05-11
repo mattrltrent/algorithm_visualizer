@@ -26,7 +26,7 @@ class _HomeViewState extends State<HomeView> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    context.read<MatrixCubit>().initMatrix(n: 15);
+    context.read<MatrixCubit>().initMatrix();
   }
 
   NodeType _selectedNodeType = NodeType.start; // todo: make this a single source of truth
@@ -52,34 +52,34 @@ class _HomeViewState extends State<HomeView> {
       context.read<MatrixCubit>().nodeExists(NodeType.start).fold(
         (result) {
           if (result is Nothing) {
-            context.read<MatrixCubit>().setNode(row, col, _selectedNodeType);
+            context.read<MatrixCubit>().setNode(row, col, Node(_selectedNodeType));
           }
         },
         (point) {
-          context.read<MatrixCubit>().setNode(point.x, point.y, NodeType.cell);
-          context.read<MatrixCubit>().setNode(row, col, _selectedNodeType);
+          context.read<MatrixCubit>().setNode(point.x, point.y, const Node(NodeType.cell));
+          context.read<MatrixCubit>().setNode(row, col, Node(_selectedNodeType));
         },
       );
     } else if (_selectedNodeType == NodeType.end) {
       context.read<MatrixCubit>().nodeExists(NodeType.end).fold(
         (result) {
           if (result is Nothing) {
-            context.read<MatrixCubit>().setNode(row, col, _selectedNodeType);
+            context.read<MatrixCubit>().setNode(row, col, Node(_selectedNodeType));
           }
         },
         (point) {
-          context.read<MatrixCubit>().setNode(point.x, point.y, NodeType.cell);
-          context.read<MatrixCubit>().setNode(row, col, _selectedNodeType);
+          context.read<MatrixCubit>().setNode(point.x, point.y, const Node(NodeType.cell));
+          context.read<MatrixCubit>().setNode(row, col, Node(_selectedNodeType));
         },
       );
     } else if (_selectedNodeType == NodeType.wall) {
       context.read<MatrixCubit>().nodeTypeAtPoint(row, col).fold(
           (result) => null, // Don't do anything if not result we expect
           (nodeType) => nodeType == NodeType.wall
-              ? context.read<MatrixCubit>().setNode(row, col, NodeType.cell)
-              : context.read<MatrixCubit>().setNode(row, col, _selectedNodeType));
+              ? context.read<MatrixCubit>().setNode(row, col, const Node(NodeType.cell))
+              : context.read<MatrixCubit>().setNode(row, col, Node(_selectedNodeType)));
     } else {
-      context.read<MatrixCubit>().setNode(row, col, _selectedNodeType);
+      context.read<MatrixCubit>().setNode(row, col, Node(_selectedNodeType));
     }
   }
 
@@ -98,7 +98,7 @@ class _HomeViewState extends State<HomeView> {
                   (endPoint) {
                     List<List<Node>> algorithmMatrixClone =
                         (context.read<MatrixCubit>().state as DisplayMatrix).clone().matrix;
-                    AlgorithmStats stats = Bfs().run(algorithmMatrixClone, startPoint, endPoint);
+                    AlgorithmStats stats = Dfs().run(algorithmMatrixClone, startPoint, endPoint);
                     if (stats.pathFound) {
                       showAlert(context, "Path found in ${stats.timeTakenMs.toString()} ms.", false);
                     } else {
