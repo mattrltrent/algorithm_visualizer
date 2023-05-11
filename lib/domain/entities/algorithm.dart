@@ -9,6 +9,7 @@ import 'node.dart';
 abstract class Algorithm {
   AlgorithmStats run(List<List<Node>> input, Point<int> start, Point<int> end);
   String name();
+  Algorithm clone();
 }
 
 /// Algorithm statistics.

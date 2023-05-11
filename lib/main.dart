@@ -1,4 +1,5 @@
 import 'package:algorithm_visualizer/domain/cubit/matrix_cubit.dart';
+import 'package:algorithm_visualizer/domain/cubit/user_cubit.dart';
 import 'package:algorithm_visualizer/presentation/views/home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,6 +18,10 @@ class MyApp extends StatelessWidget {
         BlocProvider(
           lazy: false,
           create: (context) => sl<MatrixCubit>(),
+        ),
+        BlocProvider(
+          lazy: false,
+          create: (context) => sl<UserCubit>(),
         ),
       ],
       child: MaterialApp(

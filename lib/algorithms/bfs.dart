@@ -75,4 +75,7 @@ class Bfs implements Algorithm {
     //! Return No Path
     return AlgorithmStats(path: update_list, timeTakenMicroSec: stopwatch.elapsedMicroseconds, pathFound: false);
   }
+
+  @override
+  Algorithm clone() => Bfs();
 }

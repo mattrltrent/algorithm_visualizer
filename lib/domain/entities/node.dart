@@ -26,19 +26,19 @@ extension NodeTypeColor on NodeType {
   Color get color {
     switch (this) {
       case NodeType.cell:
-        return Colors.white;
+        return Color(0xffF9F9F9);
       case NodeType.visited:
-        return Colors.orange;
+        return Color(0xff6C9BCF);
       case NodeType.wall:
         return Colors.black;
       case NodeType.start:
-        return Colors.green;
+        return Color(0xff98D8AA);
       case NodeType.end:
-        return Colors.red;
+        return Color(0xffFF6D60);
       case NodeType.path:
-        return Colors.purple;
+        return Color(0xff333C83);
       default:
-        return Colors.black;
+        return Color.fromARGB(255, 28, 33, 72);
     }
   }
 }

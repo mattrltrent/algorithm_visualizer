@@ -1,4 +1,5 @@
 import 'package:algorithm_visualizer/domain/cubit/matrix_cubit.dart';
+import 'package:algorithm_visualizer/domain/cubit/user_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
@@ -13,4 +14,5 @@ Future<void> init() async {
 
   // Cubits
   sl.registerFactory(() => MatrixCubit());
+  sl.registerFactory(() => UserCubit());
 }

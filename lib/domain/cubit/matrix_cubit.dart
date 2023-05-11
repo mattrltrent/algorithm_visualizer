@@ -15,7 +15,7 @@ part 'matrix_state.dart';
 class MatrixCubit extends Cubit<MatrixState> {
   MatrixCubit() : super(LoadingMatrix());
 
-  void initMatrix({int n = 25}) {
+  void initMatrix({int n = 10}) {
     final matrix = List.generate(n, (_) => List.generate(n, (_) => const Node(NodeType.cell)));
     emit(DisplayMatrix(matrix: matrix, updateFlag: false, isVisualizing: false));
   }
@@ -87,8 +87,8 @@ class MatrixCubit extends Cubit<MatrixState> {
     await Future.delayed(Duration(milliseconds: blockPlacingMultiplier * idx));
     idx = 0;
     for (final update in paths) {
-      setNode(
-          update.row, update.col, Node(update.updatedTo, delay: Duration(milliseconds: blockPlacingMultiplier * idx)));
+      setNode(update.row, update.col,
+          Node(update.updatedTo, delay: Duration(milliseconds: blockPlacingMultiplier * idx * 2)));
       idx++;
     }
     // add all paths

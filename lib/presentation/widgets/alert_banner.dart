@@ -7,22 +7,26 @@ void showAlert(BuildContext context, String message, bool errorColor) {
   showAlertBanner(
     context,
     () {},
-    Container(
-      padding: const EdgeInsets.all(15),
-      margin: const EdgeInsets.all(30),
-      decoration: BoxDecoration(
-        color: errorColor ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.secondary,
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: Text(
-        message,
-        style: font3.copyWith(color: Theme.of(context).colorScheme.onError),
-        textAlign: TextAlign.center,
-        maxLines: 4,
-        overflow: TextOverflow.ellipsis,
+    MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: Container(
+        padding: const EdgeInsets.all(15),
+        margin: const EdgeInsets.all(30),
+        decoration: BoxDecoration(
+          color: errorColor ? Color(0xffFF6D60) : Color(0xff98D8AA),
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: Text(
+          message,
+          style: font2.copyWith(color: Colors.black),
+          textAlign: TextAlign.center,
+          maxLines: 4,
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
     ),
     alertBannerLocation: AlertBannerLocation.bottom,
     maxLength: MediaQuery.of(context).size.width / 3,
+    durationOfStayingOnScreen: const Duration(milliseconds: 7000),
   );
 }

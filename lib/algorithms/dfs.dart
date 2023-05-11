@@ -66,4 +66,7 @@ class Dfs implements Algorithm {
     }
     return false;
   }
+
+  @override
+  Algorithm clone() => Dfs();
 }

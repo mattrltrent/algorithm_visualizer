@@ -13,4 +13,10 @@ class Dijkstra implements Algorithm {
     // TODO: implement algorithm and return `AlgorithmStats` obj with results.
     throw UnimplementedError();
   }
+
+  @override
+  Algorithm clone() {
+    // TODO: implement clone
+    throw UnimplementedError();
+  }
 }

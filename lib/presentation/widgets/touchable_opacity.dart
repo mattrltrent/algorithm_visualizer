@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-class TouchableShrink extends StatefulWidget {
-  const TouchableShrink({
-    this.tappable = true,
+class TouchableOpacity extends StatefulWidget {
+  const TouchableOpacity({
     required this.child,
     required this.onTap,
     Key? key,
@@ -10,13 +10,12 @@ class TouchableShrink extends StatefulWidget {
 
   final Widget child;
   final Function onTap;
-  final bool tappable;
 
   @override
-  State<TouchableShrink> createState() => _TouchableShrinkState();
+  State<TouchableOpacity> createState() => _TouchableOpacityState();
 }
 
-class _TouchableShrinkState extends State<TouchableShrink> with SingleTickerProviderStateMixin {
+class _TouchableOpacityState extends State<TouchableOpacity> with SingleTickerProviderStateMixin {
   late AnimationController animController;
   late Animation anim;
 
@@ -52,29 +51,29 @@ class _TouchableShrinkState extends State<TouchableShrink> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
-    return widget.tappable
-        ? GestureDetector(
-            onTapDown: (_) => setState(() {
-              animController.forward();
-              animController.addListener(() {
-                setState(() {});
-              });
-            }),
-            onTapCancel: () => setState(() {
-              animController.reverse();
-              animController.addListener(() {
-                setState(() {});
-              });
-            }),
-            onTap: () {
-              widget.onTap();
-              startAnim();
-            },
-            child: Transform.scale(
-              scale: -anim.value * 0.05 + 1,
-              child: widget.child,
-            ),
-          )
-        : widget.child;
+    return MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTapDown: (_) => setState(() {
+            animController.forward();
+            animController.addListener(() {
+              setState(() {});
+            });
+          }),
+          onTapCancel: () => setState(() {
+            animController.reverse();
+            animController.addListener(() {
+              setState(() {});
+            });
+          }),
+          onTap: () {
+            widget.onTap();
+            startAnim();
+          },
+          child: Opacity(
+            opacity: -anim.value * 0.3 + 1,
+            child: widget.child,
+          ),
+        ));
   }
 }

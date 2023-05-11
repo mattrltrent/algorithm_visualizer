@@ -42,8 +42,9 @@ class _NodeGridItemState extends State<NodeGridItem> {
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      curve: Curves.easeInOut,
+      margin: const EdgeInsets.all(1),
+      duration: const Duration(milliseconds: 125),
+      curve: Curves.easeIn,
       decoration: BoxDecoration(
         color: currColor,
         border: Border(

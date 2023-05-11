@@ -1,5 +1,5 @@
 name: algorithm_visualizer
-description: A new Flutter project.
+description: Algorithm visualizer. Made by MATTHEW ROBERT LEO TRENT.
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -41,6 +41,8 @@ dependencies:
   google_fonts: ^4.0.4
   dartz: ^0.10.1
   alert_banner: ^1.0.0
+  cool_dropdown: ^2.1.0
+  url_launcher: ^6.1.11
 
 dev_dependencies:
   flutter_test:
@@ -59,6 +61,8 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
 
+  assets:
+    - assets/github.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

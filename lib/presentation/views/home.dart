@@ -4,8 +4,10 @@ import 'package:algorithm_visualizer/algorithms/bfs.dart';
 import 'package:algorithm_visualizer/algorithms/dfs.dart';
 import 'package:algorithm_visualizer/core/results.dart';
 import 'package:algorithm_visualizer/domain/cubit/matrix_cubit.dart';
+import 'package:algorithm_visualizer/domain/cubit/user_cubit.dart';
 import 'package:algorithm_visualizer/domain/entities/algorithm.dart';
-import 'package:algorithm_visualizer/presentation/widgets/editor_appbar.dart';
+import 'package:algorithm_visualizer/domain/entities/speed.dart';
+import 'package:algorithm_visualizer/presentation/widgets/editor.dart';
 import 'package:algorithm_visualizer/presentation/widgets/node_grid_item.dart';
 import 'package:dartz/dartz.dart' as dartz;
 import 'package:flutter/cupertino.dart';
@@ -29,10 +31,11 @@ class _HomeViewState extends State<HomeView> {
     context.read<MatrixCubit>().initMatrix();
   }
 
-  NodeType _selectedNodeType = NodeType.start; // todo: make this a single source of truth
   Offset _previousLocalPos = const Offset(-1000, -1000);
 
   void write(Offset localPos, DisplayMatrix matrix, double itemSize) {
+    NodeType _selectedNodeType = (context.read<UserCubit>().state as UserPrefs).editorNodeType;
+
     // Don't run if the algorithm is currently visualizing
     if (matrix.isVisualizing) return;
 
@@ -83,43 +86,56 @@ class _HomeViewState extends State<HomeView> {
     }
   }
 
+  void runAlgorithm(BuildContext context) {
+    MatrixState state = context.read<MatrixCubit>().state;
+    if (state is! DisplayMatrix || state.isVisualizing) return;
+    context.read<MatrixCubit>().resetMatrixAfterRunning();
+    context.read<MatrixCubit>().nodeExists(NodeType.start).fold(
+          (result) => showAlert(context, "No start point found.", true),
+          (startPoint) => context.read<MatrixCubit>().nodeExists(NodeType.end).fold(
+            (result) => showAlert(context, "No end point found.", true),
+            (endPoint) {
+              List<List<Node>> algorithmMatrixClone =
+                  (context.read<MatrixCubit>().state as DisplayMatrix).clone().matrix;
+              AlgorithmStats stats = (context.read<UserCubit>().state as UserPrefs).algorithm.clone().run(
+                  algorithmMatrixClone, Point<int>(startPoint.x, startPoint.y), Point<int>(endPoint.x, endPoint.y));
+              int pathLength = stats.path.where((e) => e.updatedTo == NodeType.path).toList().length;
+              bool isSingular = stats.path.length - pathLength == 1;
+              if (stats.pathFound) {
+                showAlert(
+                    context,
+                    "$pathLength-long path found in ${stats.timeTakenMicroSec.toString()} μs. Checked ${stats.path.length - pathLength} ${isSingular ? "node" : "nodes"}.",
+                    false);
+              } else {
+                showAlert(
+                    context,
+                    "No path found in ${stats.timeTakenMicroSec.toString()} μs. Checked ${stats.path.length - pathLength} ${isSingular ? "node" : "nodes"}.",
+                    true);
+              }
+              context.read<MatrixCubit>().visualizeAlgorithm(stats.path,
+                  blockPlacingMultiplier: (context.read<UserCubit>().state as UserPrefs).speed.value);
+            },
+          ),
+        );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          MatrixState state = context.read<MatrixCubit>().state;
-          if (state is! DisplayMatrix || state.isVisualizing) return;
-          context.read<MatrixCubit>().resetMatrixAfterRunning();
-          context.read<MatrixCubit>().nodeExists(NodeType.start).fold(
-                (result) => showAlert(context, "No start point found.", true),
-                (startPoint) => context.read<MatrixCubit>().nodeExists(NodeType.end).fold(
-                  (result) => showAlert(context, "No end point found.", true),
-                  (endPoint) {
-                    List<List<Node>> algorithmMatrixClone =
-                        (context.read<MatrixCubit>().state as DisplayMatrix).clone().matrix;
-                    AlgorithmStats stats = Bfs().run(algorithmMatrixClone, startPoint, endPoint);
-                    if (stats.pathFound) {
-                      showAlert(context, "Path found in ${stats.timeTakenMicroSec.toString()} μs.", false);
-                    } else {
-                      showAlert(context, "No path found in ${stats.timeTakenMicroSec.toString()} μs.", true);
-                    }
-                    context.read<MatrixCubit>().visualizeAlgorithm(stats.path);
-                  },
-                ),
-              );
-        },
-      ),
       body: BlocBuilder<MatrixCubit, MatrixState>(
         builder: (context, state) {
           if (state is LoadingMatrix) {
             return const Center(child: CupertinoActivityIndicator());
           } else if (state is DisplayMatrix) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
+            return Row(
               children: [
-                EditorAppBar(onNodeSelected: (nodeType) => setState(() => _selectedNodeType = nodeType)),
+                Expanded(
+                  child: Center(
+                    child: Editor(
+                      runAlgorithm: () => runAlgorithm(context),
+                    ),
+                  ),
+                ),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(20),
