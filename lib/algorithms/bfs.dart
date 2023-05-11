@@ -28,6 +28,7 @@ class Bfs implements Algorithm {
 
   @override
   AlgorithmStats run(List<List<Node>> matrix, Point<int> start, Point<int> end) {
+    final stopwatch = Stopwatch()..start();
     //! provided the `input` matrix, return `AlgorithmStats` object.
     // Example (trivial) output:
     int matrix_width = matrix[0].length;
@@ -61,7 +62,7 @@ class Bfs implements Algorithm {
           update_list.add(MatrixUpdate(row: current.point.x, col: current.point.y, updatedTo: NodeType.path));
           current = current.parent!;
         }
-        return AlgorithmStats(path: update_list, timeTakenMs: 123, pathFound: true);
+        return AlgorithmStats(path: update_list, timeTakenMicroSec: stopwatch.elapsedMicroseconds, pathFound: true);
       }
       for (Point<int> next in adjcent_Moves) {
         //add every adjcent node to the queue.
@@ -72,6 +73,6 @@ class Bfs implements Algorithm {
     }
 
     //! Return No Path
-    return AlgorithmStats(path: update_list, timeTakenMs: 123, pathFound: false);
+    return AlgorithmStats(path: update_list, timeTakenMicroSec: stopwatch.elapsedMicroseconds, pathFound: false);
   }
 }

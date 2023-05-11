@@ -20,6 +20,8 @@ class Dfs implements Algorithm {
   List<MatrixUpdate> update_list = [];
   static List<Point<int>> adjcent_Moves = const [Point(0, 1), Point(1, 0), Point(0, -1), Point(-1, 0)];
   AlgorithmStats run(List<List<Node>> matrix, Point<int> start, Point<int> end) {
+    final stopwatch = Stopwatch()..start();
+
     //! provided the `input` matrix, return `AlgorithmStats` object.
     // Example (trivial) output:
     int matrix_width = matrix[0].length;
@@ -28,10 +30,11 @@ class Dfs implements Algorithm {
     PointNode current = PointNode(Point<int>(start.x, start.y), null);
     DFS(matrix, current);
     //! Return Path
-    if (update_list.isNotEmpty) return AlgorithmStats(path: update_list, timeTakenMs: 123, pathFound: true);
+    if (update_list.isNotEmpty)
+      return AlgorithmStats(path: update_list, timeTakenMicroSec: stopwatch.elapsedMicroseconds, pathFound: true);
 
     //! Return No Path
-    return AlgorithmStats(path: update_list, timeTakenMs: 123, pathFound: false);
+    return AlgorithmStats(path: update_list, timeTakenMicroSec: stopwatch.elapsedMicroseconds, pathFound: false);
     // }
   }
 

@@ -15,7 +15,7 @@ part 'matrix_state.dart';
 class MatrixCubit extends Cubit<MatrixState> {
   MatrixCubit() : super(LoadingMatrix());
 
-  void initMatrix({int n = 40}) {
+  void initMatrix({int n = 25}) {
     final matrix = List.generate(n, (_) => List.generate(n, (_) => const Node(NodeType.cell)));
     emit(DisplayMatrix(matrix: matrix, updateFlag: false, isVisualizing: false));
   }

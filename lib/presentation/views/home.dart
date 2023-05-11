@@ -98,11 +98,11 @@ class _HomeViewState extends State<HomeView> {
                   (endPoint) {
                     List<List<Node>> algorithmMatrixClone =
                         (context.read<MatrixCubit>().state as DisplayMatrix).clone().matrix;
-                    AlgorithmStats stats = Dfs().run(algorithmMatrixClone, startPoint, endPoint);
+                    AlgorithmStats stats = Bfs().run(algorithmMatrixClone, startPoint, endPoint);
                     if (stats.pathFound) {
-                      showAlert(context, "Path found in ${stats.timeTakenMs.toString()} ms.", false);
+                      showAlert(context, "Path found in ${stats.timeTakenMicroSec.toString()} μs.", false);
                     } else {
-                      showAlert(context, "No path found in ${stats.timeTakenMs.toString()} ms.", true);
+                      showAlert(context, "No path found in ${stats.timeTakenMicroSec.toString()} μs.", true);
                     }
                     context.read<MatrixCubit>().visualizeAlgorithm(stats.path);
                   },

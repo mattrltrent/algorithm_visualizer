@@ -14,14 +14,14 @@ abstract class Algorithm {
 /// Algorithm statistics.
 ///
 /// [path] is either a list of [MatrixUpdate]s found during pathfinding, or a [NoPathFailure].
-/// [timeTakenMs] is the time taken to run the algorithm in milliseconds.
+/// [timeTakenMicroSec] is the time taken to run the algorithm in microseconds.
 class AlgorithmStats {
-  final int timeTakenMs;
+  final int timeTakenMicroSec;
   final List<MatrixUpdate> path;
   final bool pathFound;
 
   const AlgorithmStats({
-    required this.timeTakenMs,
+    required this.timeTakenMicroSec,
     required this.path,
     required this.pathFound,
   });

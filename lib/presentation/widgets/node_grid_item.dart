@@ -32,7 +32,11 @@ class _NodeGridItemState extends State<NodeGridItem> {
 
   void updateTile() async {
     if (widget.node.delay != Duration.zero) await Future.delayed(widget.node.delay);
-    if (mounted) setState(() => currColor = widget.node.type.color);
+    if (mounted) {
+      setState(() {
+        currColor = widget.node.type.color;
+      });
+    }
   }
 
   @override
