@@ -1,6 +1,12 @@
+import 'dart:math';
+
+import 'package:algorithm_visualizer/algorithms/bfs.dart';
 import 'package:algorithm_visualizer/core/results.dart';
 import 'package:algorithm_visualizer/domain/cubit/matrix_cubit.dart';
+import 'package:algorithm_visualizer/domain/entities/algorithm.dart';
 import 'package:algorithm_visualizer/presentation/widgets/editor_appbar.dart';
+import 'package:algorithm_visualizer/presentation/widgets/node_grid_item.dart';
+import 'package:dartz/dartz.dart' as dartz;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,44 +27,77 @@ class _HomeViewState extends State<HomeView> {
     context.read<MatrixCubit>().initMatrix();
   }
 
-  NodeType _selectedNodeType = NodeType.cell;
+  NodeType _selectedNodeType = NodeType.start; // todo: make this a single source of truth
+  Offset _previousLocalPos = const Offset(-1000, -1000);
 
   void write(Offset localPos, DisplayMatrix matrix, double itemSize) {
     final row = (localPos.dy / itemSize).floor().clamp(0, matrix.matrix.length - 1);
     final col = (localPos.dx / itemSize).floor().clamp(0, matrix.matrix[0].length - 1);
+    final currentLocalPos = Offset(row.toDouble(), col.toDouble());
+
+    // Don't call this function multiple times per grid item
+    if (_previousLocalPos == currentLocalPos) {
+      return;
+    }
+    _previousLocalPos = currentLocalPos;
+
     // At most 1 start/finish node should exist at a time
     if (_selectedNodeType == NodeType.start) {
       context.read<MatrixCubit>().nodeExists(NodeType.start).fold(
         (result) {
           if (result is Nothing) {
-            context.read<MatrixCubit>().setNode(row, col, Node(_selectedNodeType));
+            context.read<MatrixCubit>().setNode(row, col, _selectedNodeType);
           }
         },
         (point) {
-          context.read<MatrixCubit>().setNode(point.x, point.y, const Node(NodeType.cell));
-          context.read<MatrixCubit>().setNode(row, col, Node(_selectedNodeType));
+          context.read<MatrixCubit>().setNode(point.x, point.y, NodeType.cell);
+          context.read<MatrixCubit>().setNode(row, col, _selectedNodeType);
         },
       );
     } else if (_selectedNodeType == NodeType.end) {
       context.read<MatrixCubit>().nodeExists(NodeType.end).fold(
         (result) {
           if (result is Nothing) {
-            context.read<MatrixCubit>().setNode(row, col, Node(_selectedNodeType));
+            context.read<MatrixCubit>().setNode(row, col, _selectedNodeType);
           }
         },
         (point) {
-          context.read<MatrixCubit>().setNode(point.x, point.y, const Node(NodeType.cell));
-          context.read<MatrixCubit>().setNode(row, col, Node(_selectedNodeType));
+          context.read<MatrixCubit>().setNode(point.x, point.y, NodeType.cell);
+          context.read<MatrixCubit>().setNode(row, col, _selectedNodeType);
         },
       );
+    } else if (_selectedNodeType == NodeType.wall) {
+      context.read<MatrixCubit>().nodeTypeAtPoint(row, col).fold(
+          (result) => null, // Don't do anything if not result we expect
+          (nodeType) => nodeType == NodeType.wall
+              ? context.read<MatrixCubit>().setNode(row, col, NodeType.cell)
+              : context.read<MatrixCubit>().setNode(row, col, _selectedNodeType));
+    } else {
+      context.read<MatrixCubit>().setNode(row, col, _selectedNodeType);
     }
-
-    context.read<MatrixCubit>().setNode(row, col, Node(_selectedNodeType));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(onPressed: () {
+        Point<int> start = context.read<MatrixCubit>().nodeExists(NodeType.start).fold(
+              (l) => throw Exception("no start"),
+              (r) => r,
+            );
+        Point<int> end = context.read<MatrixCubit>().nodeExists(NodeType.end).fold(
+              (l) => throw Exception("no end"),
+              (r) => r,
+            );
+        List<List<Node>> matrix = (context.read<MatrixCubit>().state as DisplayMatrix).clone().matrix;
+        context.read<MatrixCubit>().visualizeAlgorithm(
+              dartz.Right(
+                Bfs().run(matrix, start, end).path.fold((l) => throw Exception("no path"), (r) {
+                  return r;
+                }),
+              ),
+            );
+      }),
       body: BlocBuilder<MatrixCubit, MatrixState>(
         builder: (context, state) {
           if (state is LoadingMatrix) {
@@ -77,7 +116,14 @@ class _HomeViewState extends State<HomeView> {
                       child: Center(
                         child: Container(
                           decoration: BoxDecoration(
-                            border: Border.all(color: Colors.black),
+                            border: Border.all(color: Colors.black, width: 4),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.5),
+                                blurRadius: 20,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
                           ),
                           child: LayoutBuilder(
                             builder: (context, constraints) {
@@ -85,6 +131,8 @@ class _HomeViewState extends State<HomeView> {
                               return Listener(
                                   onPointerDown: (details) => write(details.localPosition, state, itemSize),
                                   onPointerMove: (details) => write(details.localPosition, state, itemSize),
+                                  onPointerUp: (_) => setState(() => _previousLocalPos =
+                                      const Offset(-1000, -1000)), // Rest local position if user lifts finger/cursor
                                   child: GridView.custom(
                                     physics: const NeverScrollableScrollPhysics(),
                                     padding: EdgeInsets.zero,
@@ -100,31 +148,7 @@ class _HomeViewState extends State<HomeView> {
                                         final row = index ~/ state.matrix[0].length;
                                         final col = index % state.matrix[0].length;
                                         final node = state.matrix[row][col];
-                                        return AnimatedContainer(
-                                          duration: const Duration(milliseconds: 500),
-                                          curve: Curves.easeInOut,
-                                          decoration: BoxDecoration(
-                                            color: node.type.color,
-                                            border: Border(
-                                              top: BorderSide(
-                                                color: Colors.blue.withOpacity(0.5),
-                                                width: row == 0 ? 0.5 : 0,
-                                              ),
-                                              left: BorderSide(
-                                                color: Colors.blue.withOpacity(0.5),
-                                                width: col == 0 ? 0.5 : 0,
-                                              ),
-                                              right: BorderSide(
-                                                color: Colors.blue.withOpacity(0.5),
-                                                width: col == state.matrix[0].length - 1 ? 0.5 : 0,
-                                              ),
-                                              bottom: BorderSide(
-                                                color: Colors.blue.withOpacity(0.5),
-                                                width: row == state.matrix.length - 1 ? 0.5 : 0,
-                                              ),
-                                            ),
-                                          ),
-                                        );
+                                        return NodeGridItem(matrix: state.matrix, node: node, row: row, col: col);
                                       },
                                       childCount: state.matrix.length * state.matrix[0].length,
                                     ),

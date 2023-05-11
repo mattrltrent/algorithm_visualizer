@@ -15,6 +15,11 @@ class DisplayMatrix extends MatrixState {
 
   const DisplayMatrix({required this.matrix, required this.updateFlag});
 
+  DisplayMatrix clone() {
+    final clonedMatrix = matrix.map((row) => row.map((node) => node.clone()).toList()).toList();
+    return DisplayMatrix(matrix: clonedMatrix, updateFlag: !updateFlag);
+  }
+
   @override
   List<Object?> get props => [matrix, updateFlag];
 }
