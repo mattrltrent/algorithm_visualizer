@@ -16,6 +16,12 @@ class BfsNode extends Node {
   List<Object?> get props => [type, parent];
 }
 
+class PointNode {
+  final Point<int> point;
+  final PointNode? parent;
+  const PointNode(this.point, this.parent);
+}
+
 class Bfs extends Algorithm {
   @override
   AlgorithmStats run(List<List<Node>> matrix, Point<int> start, Point<int> end) {
@@ -26,35 +32,40 @@ class Bfs extends Algorithm {
     List<MatrixUpdate> update_list = [];
     const List<Point<int>> adjcent_Moves = [Point(0, 1), Point(1, 0), Point(0, -1), Point(-1, 0)];
 
-    Queue<Point<int>> futureNodes = Queue<Point<int>>();
-    futureNodes.add(Point<int>(start.x, start.y));
+    Queue<PointNode> futureNodes = Queue<PointNode>();
+    futureNodes.add(PointNode(Point<int>(start.x, start.y), null));
 
     while (futureNodes.isNotEmpty) {
-      Point<int> current = futureNodes.removeFirst();
+      PointNode current = futureNodes.removeFirst();
       //check if the current node is a unwanted node.
-      if (current.x < 0 ||
-          current.x >= matrix_width ||
-          current.y < 0 ||
-          current.y >= matrix_height ||
-          matrix[current.x][current.y].type == NodeType.visited ||
-          matrix[current.x][current.y].type == NodeType.wall) {
-        // if (update_list.isNotEmpty) update_list.removeLast();
+      if (current.point.x < 0 ||
+          current.point.x >= matrix_width ||
+          current.point.y < 0 ||
+          current.point.y >= matrix_height ||
+          matrix[current.point.x][current.point.y].type == NodeType.visited ||
+          matrix[current.point.x][current.point.y].type == NodeType.wall) {
         continue;
       }
-      update_list.add(MatrixUpdate(row: current.x, col: current.y, updatedTo: NodeType.visited));
-      if (matrix[current.x][current.y].type == NodeType.end) {
+      update_list.add(MatrixUpdate(row: current.point.x, col: current.point.y, updatedTo: NodeType.visited));
+      if (matrix[current.point.x][current.point.y].type == NodeType.end) {
         //! Return Path
 
         if (update_list.isNotEmpty) update_list.removeLast();
         if (update_list.isNotEmpty) update_list.removeAt(0);
+        if (current.parent != null) current = current.parent!;
+        while (current.parent != start) {
+          if (current.parent == null) break;
+          update_list.add(MatrixUpdate(row: current.point.x, col: current.point.y, updatedTo: NodeType.path));
+          current = current.parent!;
+        }
         return AlgorithmStats(path: Right(update_list), timeTakenMs: 123);
       }
       for (Point<int> next in adjcent_Moves) {
         //add every adjcent node to the queue.
-        futureNodes.add(Point(current.x + next.x, current.y + next.y));
+        futureNodes.add(PointNode(Point(current.point.x + next.x, current.point.y + next.y), current));
       }
       //Set Current Node to be visited.
-      matrix[current.x][current.y] = const Node(NodeType.visited);
+      matrix[current.point.x][current.point.y] = const Node(NodeType.visited);
     }
 
     //! Return No Path

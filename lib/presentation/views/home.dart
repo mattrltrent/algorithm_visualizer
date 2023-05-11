@@ -24,21 +24,22 @@ class _HomeViewState extends State<HomeView> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    context.read<MatrixCubit>().initMatrix();
+    context.read<MatrixCubit>().initMatrix(n: 19);
   }
 
   NodeType _selectedNodeType = NodeType.start; // todo: make this a single source of truth
   Offset _previousLocalPos = const Offset(-1000, -1000);
 
   void write(Offset localPos, DisplayMatrix matrix, double itemSize) {
+    // Clear old visited/path nodes.
+    context.read<MatrixCubit>().resetMatrixAfterRunning();
+
     final row = (localPos.dy / itemSize).floor().clamp(0, matrix.matrix.length - 1);
     final col = (localPos.dx / itemSize).floor().clamp(0, matrix.matrix[0].length - 1);
     final currentLocalPos = Offset(row.toDouble(), col.toDouble());
 
     // Don't call this function multiple times per grid item
-    if (_previousLocalPos == currentLocalPos) {
-      return;
-    }
+    if (_previousLocalPos == currentLocalPos) return;
     _previousLocalPos = currentLocalPos;
 
     // At most 1 start/finish node should exist at a time
@@ -80,24 +81,28 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(onPressed: () {
-        Point<int> start = context.read<MatrixCubit>().nodeExists(NodeType.start).fold(
-              (l) => throw Exception("no start"),
-              (r) => r,
-            );
-        Point<int> end = context.read<MatrixCubit>().nodeExists(NodeType.end).fold(
-              (l) => throw Exception("no end"),
-              (r) => r,
-            );
-        List<List<Node>> matrix = (context.read<MatrixCubit>().state as DisplayMatrix).clone().matrix;
-        context.read<MatrixCubit>().visualizeAlgorithm(
-              dartz.Right(
-                Bfs().run(matrix, start, end).path.fold((l) => throw Exception("no path"), (r) {
-                  return r;
-                }),
-              ),
-            );
-      }),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          context.read<MatrixCubit>().resetMatrixAfterRunning();
+          Point<int> start = context.read<MatrixCubit>().nodeExists(NodeType.start).fold(
+                (l) => throw Exception("no start"),
+                (r) => r,
+              );
+          Point<int> end = context.read<MatrixCubit>().nodeExists(NodeType.end).fold(
+                (l) => throw Exception("no end"),
+                (r) => r,
+              );
+          List<List<Node>> algorithmMatrixClone = (context.read<MatrixCubit>().state as DisplayMatrix).clone().matrix;
+          context.read<MatrixCubit>().visualizeAlgorithm(
+                dartz.Right(
+                  Bfs().run(algorithmMatrixClone, start, end).path.fold((l) => throw Exception("no path"), (r) {
+                    print(r.map((e) => e.updatedTo.toString()).toList());
+                    return r;
+                  }),
+                ),
+              );
+        },
+      ),
       body: BlocBuilder<MatrixCubit, MatrixState>(
         builder: (context, state) {
           if (state is LoadingMatrix) {

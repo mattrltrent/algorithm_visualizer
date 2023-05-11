@@ -14,8 +14,8 @@ part 'matrix_state.dart';
 class MatrixCubit extends Cubit<MatrixState> {
   MatrixCubit() : super(LoadingMatrix());
 
-  void initMatrix({int x = 10, int y = 10}) {
-    final matrix = List.generate(y, (_) => List.generate(x, (_) => const Node(NodeType.cell)));
+  void initMatrix({int n = 10}) {
+    final matrix = List.generate(n, (_) => List.generate(n, (_) => const Node(NodeType.cell)));
     emit(DisplayMatrix(matrix: matrix, updateFlag: false));
   }
 
@@ -75,6 +75,22 @@ class MatrixCubit extends Cubit<MatrixState> {
           return PathFound();
         },
       );
+    } else {
+      return BadState();
+    }
+  }
+
+  Result resetMatrixAfterRunning() {
+    if (state is DisplayMatrix) {
+      final matrix = (state as DisplayMatrix).matrix;
+      for (var i = 0; i < matrix.length; i++) {
+        for (var j = 0; j < matrix[0].length; j++) {
+          if (matrix[i][j].type == NodeType.visited || matrix[i][j].type == NodeType.path) {
+            setNode(i, j, NodeType.cell);
+          }
+        }
+      }
+      return GeneralSuccess();
     } else {
       return BadState();
     }
