@@ -27,6 +27,7 @@ class Editor extends StatefulWidget {
 class EditorState extends State<Editor> {
   List<Algorithm> algorithms = [Bfs(), Dfs()];
   List<Speed> speed = [Speed.slow, Speed.medium, Speed.fast];
+  List<int> nSizeMatrix = [10, 20, 30, 40, 50];
 
   void _launchUrl(String url) async {
     try {
@@ -75,7 +76,10 @@ class EditorState extends State<Editor> {
             spacing: 20,
             children: [
               PrimaryButton(text: "Run algorithm", onTap: () => widget.runAlgorithm()),
-              PrimaryButton(text: "Clear board", onTap: () => context.read<MatrixCubit>().initMatrix()),
+              PrimaryButton(
+                text: "Clear path",
+                onTap: () => context.read<MatrixCubit>().resetMatrixAfterRunning(),
+              ),
               PrimaryButton(text: "Randomize map", onTap: () => showAlert(context, "Not yet implemented.", true)),
               AppleDropdown(
                 onSelect: (idx) => context.read<UserCubit>().setAlgorithm(algorithms[idx]),
@@ -86,6 +90,14 @@ class EditorState extends State<Editor> {
                 onSelect: (idx) => context.read<UserCubit>().setSpeed(speed[idx]),
                 selectedOption: (context.watch<UserCubit>().state as UserPrefs).speed.name,
                 options: speed.map((e) => e.name).toList(),
+              ),
+              AppleDropdown(
+                onSelect: (idx) {
+                  context.read<UserCubit>().setNSizeMatrix(nSizeMatrix[idx]);
+                  context.read<MatrixCubit>().initMatrix(n: (context.read<UserCubit>().state as UserPrefs).nSizeMatrix);
+                },
+                selectedOption: "n: ${(context.watch<UserCubit>().state as UserPrefs).nSizeMatrix.toString()}",
+                options: nSizeMatrix.map((e) => e.toString()).toList(),
               ),
             ],
           )),

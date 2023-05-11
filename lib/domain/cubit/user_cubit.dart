@@ -9,11 +9,21 @@ import '../entities/speed.dart';
 part 'user_state.dart';
 
 class UserCubit extends Cubit<UserState> {
-  UserCubit() : super(UserPrefs(algorithm: Bfs(), speed: Speed.slow, editorNodeType: NodeType.start)); // defaults
+  UserCubit()
+      : super(
+          UserPrefs(
+            algorithm: Bfs(),
+            speed: Speed.slow,
+            editorNodeType: NodeType.start,
+            nSizeMatrix: 10,
+          ),
+        ); // defaults
 
   void setSpeed(Speed speed) => emit((state as UserPrefs).copyWith(speed: speed));
 
   void setAlgorithm(Algorithm algorithm) => emit((state as UserPrefs).copyWith(algorithm: algorithm));
 
   void setEditorNodeType(NodeType nodeType) => emit((state as UserPrefs).copyWith(editorNodeType: nodeType));
+
+  void setNSizeMatrix(int n) => emit((state as UserPrefs).copyWith(nSizeMatrix: n));
 }

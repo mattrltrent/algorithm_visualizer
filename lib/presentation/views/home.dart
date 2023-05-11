@@ -28,13 +28,14 @@ class _HomeViewState extends State<HomeView> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    context.read<MatrixCubit>().initMatrix();
+    int nSizeMatrix = (context.read<UserCubit>().state as UserPrefs).nSizeMatrix;
+    context.read<MatrixCubit>().initMatrix(n: nSizeMatrix);
   }
 
   Offset _previousLocalPos = const Offset(-1000, -1000);
 
   void write(Offset localPos, DisplayMatrix matrix, double itemSize) {
-    NodeType _selectedNodeType = (context.read<UserCubit>().state as UserPrefs).editorNodeType;
+    NodeType selectedNodeType = (context.read<UserCubit>().state as UserPrefs).editorNodeType;
 
     // Don't run if the algorithm is currently visualizing
     if (matrix.isVisualizing) return;
@@ -51,38 +52,38 @@ class _HomeViewState extends State<HomeView> {
     _previousLocalPos = currentLocalPos;
 
     // At most 1 start/finish node should exist at a time
-    if (_selectedNodeType == NodeType.start) {
+    if (selectedNodeType == NodeType.start) {
       context.read<MatrixCubit>().nodeExists(NodeType.start).fold(
         (result) {
           if (result is Nothing) {
-            context.read<MatrixCubit>().setNode(row, col, Node(_selectedNodeType));
+            context.read<MatrixCubit>().setNode(row, col, Node(selectedNodeType));
           }
         },
         (point) {
           context.read<MatrixCubit>().setNode(point.x, point.y, const Node(NodeType.cell));
-          context.read<MatrixCubit>().setNode(row, col, Node(_selectedNodeType));
+          context.read<MatrixCubit>().setNode(row, col, Node(selectedNodeType));
         },
       );
-    } else if (_selectedNodeType == NodeType.end) {
+    } else if (selectedNodeType == NodeType.end) {
       context.read<MatrixCubit>().nodeExists(NodeType.end).fold(
         (result) {
           if (result is Nothing) {
-            context.read<MatrixCubit>().setNode(row, col, Node(_selectedNodeType));
+            context.read<MatrixCubit>().setNode(row, col, Node(selectedNodeType));
           }
         },
         (point) {
           context.read<MatrixCubit>().setNode(point.x, point.y, const Node(NodeType.cell));
-          context.read<MatrixCubit>().setNode(row, col, Node(_selectedNodeType));
+          context.read<MatrixCubit>().setNode(row, col, Node(selectedNodeType));
         },
       );
-    } else if (_selectedNodeType == NodeType.wall) {
+    } else if (selectedNodeType == NodeType.wall) {
       context.read<MatrixCubit>().nodeTypeAtPoint(row, col).fold(
           (result) => null, // Don't do anything if not result we expect
           (nodeType) => nodeType == NodeType.wall
               ? context.read<MatrixCubit>().setNode(row, col, const Node(NodeType.cell))
-              : context.read<MatrixCubit>().setNode(row, col, Node(_selectedNodeType)));
+              : context.read<MatrixCubit>().setNode(row, col, Node(selectedNodeType)));
     } else {
-      context.read<MatrixCubit>().setNode(row, col, Node(_selectedNodeType));
+      context.read<MatrixCubit>().setNode(row, col, Node(selectedNodeType));
     }
   }
 

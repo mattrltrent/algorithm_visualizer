@@ -1,5 +1,4 @@
 import 'package:algorithm_visualizer/presentation/widgets/touchable_opacity.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -25,7 +24,7 @@ class PrimaryButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.secondary,
+          color: const Color(0xff6C9BCF),
           borderRadius: BorderRadius.circular(5),
         ),
         child: Text(
