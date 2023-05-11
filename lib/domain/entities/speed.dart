@@ -8,7 +8,7 @@ extension SpeedValueExtension on Speed {
       case Speed.medium:
         return 20;
       case Speed.fast:
-        return 10;
+        return 5;
     }
   }
 }

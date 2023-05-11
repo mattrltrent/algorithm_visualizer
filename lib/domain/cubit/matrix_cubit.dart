@@ -88,7 +88,7 @@ class MatrixCubit extends Cubit<MatrixState> {
     idx = 0;
     for (final update in paths) {
       setNode(update.row, update.col,
-          Node(update.updatedTo, delay: Duration(milliseconds: blockPlacingMultiplier * idx * 2)));
+          Node(update.updatedTo, delay: Duration(milliseconds: blockPlacingMultiplier * idx * 3)));
       idx++;
     }
     // add all paths
