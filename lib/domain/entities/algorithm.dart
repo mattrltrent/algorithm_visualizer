@@ -8,6 +8,7 @@ import 'node.dart';
 /// Interface for how to implement algorithm solutions adhering to the grid visualization.
 abstract class Algorithm {
   AlgorithmStats run(List<List<Node>> input, Point<int> start, Point<int> end);
+  String name();
 }
 
 /// Algorithm statistics.
@@ -16,11 +17,13 @@ abstract class Algorithm {
 /// [timeTakenMs] is the time taken to run the algorithm in milliseconds.
 class AlgorithmStats {
   final int timeTakenMs;
-  final Either<NoPath, List<MatrixUpdate>> path;
+  final List<MatrixUpdate> path;
+  final bool pathFound;
 
   const AlgorithmStats({
     required this.timeTakenMs,
     required this.path,
+    required this.pathFound,
   });
 }
 

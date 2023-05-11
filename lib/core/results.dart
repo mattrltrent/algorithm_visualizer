@@ -21,3 +21,5 @@ class Nothing extends General {}
 class NoPath extends General {}
 
 class PathFound extends General {}
+
+class AlreadyVisualizing extends General {}

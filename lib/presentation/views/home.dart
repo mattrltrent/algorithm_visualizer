@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:algorithm_visualizer/algorithms/bfs.dart';
+import 'package:algorithm_visualizer/algorithms/dfs.dart';
 import 'package:algorithm_visualizer/core/results.dart';
 import 'package:algorithm_visualizer/domain/cubit/matrix_cubit.dart';
 import 'package:algorithm_visualizer/domain/entities/algorithm.dart';
@@ -12,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../domain/entities/node.dart';
+import '../widgets/alert_banner.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -24,13 +26,16 @@ class _HomeViewState extends State<HomeView> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    context.read<MatrixCubit>().initMatrix(n: 19);
+    context.read<MatrixCubit>().initMatrix(n: 15);
   }
 
   NodeType _selectedNodeType = NodeType.start; // todo: make this a single source of truth
   Offset _previousLocalPos = const Offset(-1000, -1000);
 
   void write(Offset localPos, DisplayMatrix matrix, double itemSize) {
+    // Don't run if the algorithm is currently visualizing
+    if (matrix.isVisualizing) return;
+
     // Clear old visited/path nodes.
     context.read<MatrixCubit>().resetMatrixAfterRunning();
 
@@ -83,22 +88,24 @@ class _HomeViewState extends State<HomeView> {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          MatrixState state = context.read<MatrixCubit>().state;
+          if (state is! DisplayMatrix || state.isVisualizing) return;
           context.read<MatrixCubit>().resetMatrixAfterRunning();
-          Point<int> start = context.read<MatrixCubit>().nodeExists(NodeType.start).fold(
-                (l) => throw Exception("no start"),
-                (r) => r,
-              );
-          Point<int> end = context.read<MatrixCubit>().nodeExists(NodeType.end).fold(
-                (l) => throw Exception("no end"),
-                (r) => r,
-              );
-          List<List<Node>> algorithmMatrixClone = (context.read<MatrixCubit>().state as DisplayMatrix).clone().matrix;
-          context.read<MatrixCubit>().visualizeAlgorithm(
-                dartz.Right(
-                  Bfs().run(algorithmMatrixClone, start, end).path.fold((l) => throw Exception("no path"), (r) {
-                    print(r.map((e) => e.updatedTo.toString()).toList());
-                    return r;
-                  }),
+          context.read<MatrixCubit>().nodeExists(NodeType.start).fold(
+                (result) => showAlert(context, "No start point found.", true),
+                (startPoint) => context.read<MatrixCubit>().nodeExists(NodeType.end).fold(
+                  (result) => showAlert(context, "No end point found.", true),
+                  (endPoint) {
+                    List<List<Node>> algorithmMatrixClone =
+                        (context.read<MatrixCubit>().state as DisplayMatrix).clone().matrix;
+                    AlgorithmStats stats = Bfs().run(algorithmMatrixClone, startPoint, endPoint);
+                    if (stats.pathFound) {
+                      showAlert(context, "Path found in ${stats.timeTakenMs.toString()} ms.", false);
+                    } else {
+                      showAlert(context, "No path found in ${stats.timeTakenMs.toString()} ms.", true);
+                    }
+                    context.read<MatrixCubit>().visualizeAlgorithm(stats.path);
+                  },
                 ),
               );
         },

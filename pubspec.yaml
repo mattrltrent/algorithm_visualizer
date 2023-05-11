@@ -40,6 +40,7 @@ dependencies:
   equatable: ^2.0.5
   google_fonts: ^4.0.4
   dartz: ^0.10.1
+  alert_banner: ^1.0.0
 
 dev_dependencies:
   flutter_test:

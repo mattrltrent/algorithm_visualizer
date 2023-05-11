@@ -22,7 +22,10 @@ class PointNode {
   const PointNode(this.point, this.parent);
 }
 
-class Bfs extends Algorithm {
+class Bfs implements Algorithm {
+  @override
+  String name() => "Breadth First Search";
+
   @override
   AlgorithmStats run(List<List<Node>> matrix, Point<int> start, Point<int> end) {
     //! provided the `input` matrix, return `AlgorithmStats` object.
@@ -58,7 +61,7 @@ class Bfs extends Algorithm {
           update_list.add(MatrixUpdate(row: current.point.x, col: current.point.y, updatedTo: NodeType.path));
           current = current.parent!;
         }
-        return AlgorithmStats(path: Right(update_list), timeTakenMs: 123);
+        return AlgorithmStats(path: update_list, timeTakenMs: 123, pathFound: true);
       }
       for (Point<int> next in adjcent_Moves) {
         //add every adjcent node to the queue.
@@ -69,12 +72,6 @@ class Bfs extends Algorithm {
     }
 
     //! Return No Path
-    return AlgorithmStats(path: Left(NoPath()), timeTakenMs: 123);
-    // }
-
-    return const AlgorithmStats(
-      timeTakenMs: 0,
-      path: Right([]), // path: Left(NoPath()) OR path: Right([MatrixUpdate(...), MatrixUpdate(...), ...])
-    );
+    return AlgorithmStats(path: update_list, timeTakenMs: 123, pathFound: false);
   }
 }

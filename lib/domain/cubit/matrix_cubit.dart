@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:algorithm_visualizer/core/results.dart';
@@ -16,14 +17,17 @@ class MatrixCubit extends Cubit<MatrixState> {
 
   void initMatrix({int n = 10}) {
     final matrix = List.generate(n, (_) => List.generate(n, (_) => const Node(NodeType.cell)));
-    emit(DisplayMatrix(matrix: matrix, updateFlag: false));
+    emit(DisplayMatrix(matrix: matrix, updateFlag: false, isVisualizing: false));
   }
 
   Either<Success, Failure> setNode(int i, int j, NodeType nodeType) {
     if (state is DisplayMatrix) {
       List<List<Node>> updatedMatrix = List<List<Node>>.from((state as DisplayMatrix).matrix);
       updatedMatrix[i][j] = Node(nodeType);
-      emit(DisplayMatrix(matrix: updatedMatrix, updateFlag: !(state as DisplayMatrix).updateFlag));
+      emit(DisplayMatrix(
+          matrix: updatedMatrix,
+          updateFlag: !(state as DisplayMatrix).updateFlag,
+          isVisualizing: (state as DisplayMatrix).isVisualizing));
       return Left(GeneralSuccess());
     } else {
       return Right(BadState());
@@ -63,21 +67,27 @@ class MatrixCubit extends Cubit<MatrixState> {
     }
   }
 
-  Future<Result> visualizeAlgorithm(Either<NoPath, List<MatrixUpdate>> path,
-      {Duration blockPlacingDelay = const Duration(milliseconds: 15)}) async {
-    if (state is DisplayMatrix) {
-      return path.fold(
-        (noPath) => NoPath(), // do nothing, as there's no path
-        (matrixUpdates) async {
-          for (final update in matrixUpdates) {
-            await Future.delayed(blockPlacingDelay).then((value) => setNode(update.row, update.col, update.updatedTo));
-          }
-          return PathFound();
-        },
-      );
-    } else {
-      return BadState();
-    }
+  Future<Result> visualizeAlgorithm(List<MatrixUpdate> path,
+      {Duration blockPlacingDelay = const Duration(milliseconds: 5)}) async {
+    final currentState = state as DisplayMatrix;
+    if (currentState.isVisualizing) return AlreadyVisualizing();
+    final newState = currentState.copyWith(isVisualizing: true);
+    emit(newState);
+
+    int currentBlockIndex = 0;
+    Timer.periodic(blockPlacingDelay, (timer) {
+      if (currentBlockIndex >= path.length) {
+        timer.cancel();
+        emit(currentState.copyWith(isVisualizing: false));
+        return;
+      }
+
+      final currentBlock = path[currentBlockIndex];
+      setNode(currentBlock.row, currentBlock.col, currentBlock.updatedTo);
+      currentBlockIndex++;
+    });
+
+    return PathFound();
   }
 
   Result resetMatrixAfterRunning() {
