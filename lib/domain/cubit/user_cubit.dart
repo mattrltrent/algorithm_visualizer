@@ -15,7 +15,7 @@ class UserCubit extends Cubit<UserState> {
             algorithm: Bfs(),
             speed: Speed.slow,
             editorNodeType: NodeType.start,
-            nSizeMatrix: 10,
+            nSizeMatrix: 5,
           ),
         ); // defaults
 

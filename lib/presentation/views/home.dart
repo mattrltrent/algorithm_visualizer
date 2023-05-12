@@ -56,34 +56,34 @@ class _HomeViewState extends State<HomeView> {
       context.read<MatrixCubit>().nodeExists(NodeType.start).fold(
         (result) {
           if (result is Nothing) {
-            context.read<MatrixCubit>().setNode(row, col, Node(selectedNodeType));
+            context.read<MatrixCubit>().setNode(row, col, Node(selectedNodeType), false);
           }
         },
         (point) {
-          context.read<MatrixCubit>().setNode(point.x, point.y, const Node(NodeType.cell));
-          context.read<MatrixCubit>().setNode(row, col, Node(selectedNodeType));
+          context.read<MatrixCubit>().setNode(point.x, point.y, const Node(NodeType.cell), false);
+          context.read<MatrixCubit>().setNode(row, col, Node(selectedNodeType), false);
         },
       );
     } else if (selectedNodeType == NodeType.end) {
       context.read<MatrixCubit>().nodeExists(NodeType.end).fold(
         (result) {
           if (result is Nothing) {
-            context.read<MatrixCubit>().setNode(row, col, Node(selectedNodeType));
+            context.read<MatrixCubit>().setNode(row, col, Node(selectedNodeType), false);
           }
         },
         (point) {
-          context.read<MatrixCubit>().setNode(point.x, point.y, const Node(NodeType.cell));
-          context.read<MatrixCubit>().setNode(row, col, Node(selectedNodeType));
+          context.read<MatrixCubit>().setNode(point.x, point.y, const Node(NodeType.cell), false);
+          context.read<MatrixCubit>().setNode(row, col, Node(selectedNodeType), false);
         },
       );
     } else if (selectedNodeType == NodeType.wall) {
       context.read<MatrixCubit>().nodeTypeAtPoint(row, col).fold(
           (result) => null, // Don't do anything if not result we expect
           (nodeType) => nodeType == NodeType.wall
-              ? context.read<MatrixCubit>().setNode(row, col, const Node(NodeType.cell))
-              : context.read<MatrixCubit>().setNode(row, col, Node(selectedNodeType)));
+              ? context.read<MatrixCubit>().setNode(row, col, const Node(NodeType.cell), false)
+              : context.read<MatrixCubit>().setNode(row, col, Node(selectedNodeType), false));
     } else {
-      context.read<MatrixCubit>().setNode(row, col, Node(selectedNodeType));
+      context.read<MatrixCubit>().setNode(row, col, Node(selectedNodeType), false);
     }
   }
 
@@ -123,7 +123,8 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocBuilder<MatrixCubit, MatrixState>(
+      body: BlocConsumer<MatrixCubit, MatrixState>(
+        listener: (context, state) => print("update: ${UniqueKey()}"),
         builder: (context, state) {
           if (state is LoadingMatrix) {
             return const Center(child: CupertinoActivityIndicator());

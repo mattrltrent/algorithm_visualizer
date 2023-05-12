@@ -36,7 +36,7 @@ extension NodeTypeColor on NodeType {
       case NodeType.end:
         return Color(0xffFF6D60);
       case NodeType.path:
-        return Color(0xff333C83);
+        return Color(0xffBE5A83);
       default:
         return Color.fromARGB(255, 28, 33, 72);
     }
