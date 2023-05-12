@@ -27,14 +27,18 @@ class MatrixCubit extends Cubit<MatrixState> {
     Random random = Random();
     bool invalidMaze = true;
     List<List<Node>> matrix = List.generate(
+      n,
+      (_) => List.generate(
         n,
-        (_) => List.generate(n, (_) {
-              if ((random.nextInt(3)) == 1) {
-                return const Node(NodeType.wall);
-              } else {
-                return const Node(NodeType.cell);
-              }
-            }));
+        (_) {
+          if ((random.nextInt(3)) == 1) {
+            return const Node(NodeType.wall);
+          } else {
+            return const Node(NodeType.cell);
+          }
+        },
+      ),
+    );
     while (invalidMaze) {
       matrix = List.generate(
           n,
@@ -111,61 +115,24 @@ class MatrixCubit extends Cubit<MatrixState> {
   }
 
   Future<Result> visualizeAlgorithm(List<MatrixUpdate> path, {int blockPlacingMultiplier = 1}) async {
-    printBoard();
-    resetMatrixAfterRunning();
-    resetMatrixAfterRunning();
-
-    resetMatrixAfterRunning();
-
-    resetMatrixAfterRunning();
-
-    resetMatrixAfterRunning();
-
-    resetMatrixAfterRunning();
-
-    resetMatrixAfterRunning();
-
-    resetMatrixAfterRunning();
-    resetMatrixAfterRunning();
-
-    resetMatrixAfterRunning();
-
-    resetMatrixAfterRunning();
-
-    resetMatrixAfterRunning();
-    resetMatrixAfterRunning();
-    resetMatrixAfterRunning();
-    resetMatrixAfterRunning();
-    resetMatrixAfterRunning();
-    resetMatrixAfterRunning();
-    emit((state as DisplayMatrix));
-
+    // resetMatrixAfterRunning();
+    // emit((state as DisplayMatrix));
     final currentState = state as DisplayMatrix;
     if (currentState.isVisualizing) return AlreadyVisualizing();
     final newState = currentState.copyWith(isVisualizing: true).clone();
     emit(newState);
     print("starting...");
-    int idx = 0;
-    await Future.delayed(const Duration(milliseconds: 250)); // give time for cleared board to be seen
-    List paths = [];
+    // await Future.delayed(const Duration(milliseconds: 250)); // give time for cleared board to be seen
+
     for (final update in path) {
       if (update.updatedTo == NodeType.path) {
-        paths.add(update);
+        setNode(update.row, update.col, Node(update.updatedTo), true);
       } else {
-        setNode(update.row, update.col,
-            Node(update.updatedTo, delay: Duration(milliseconds: blockPlacingMultiplier * idx)), true);
-        idx++;
+        setNode(update.row, update.col, Node(update.updatedTo), true);
       }
+      await Future.delayed(const Duration(milliseconds: 1));
     }
-    await Future.delayed(Duration(milliseconds: blockPlacingMultiplier * idx));
-    idx = 0;
-    for (final update in paths) {
-      setNode(update.row, update.col,
-          Node(update.updatedTo, delay: Duration(milliseconds: blockPlacingMultiplier * idx * 3)), true);
-      idx++;
-    }
-    // await Future.delayed(Duration(milliseconds: blockPlacingMultiplier * idx * 3));
-    // add all paths
+
     emit((state as DisplayMatrix).copyWith(isVisualizing: false).clone());
     print("DONE");
     return GeneralSuccess();
@@ -173,7 +140,7 @@ class MatrixCubit extends Cubit<MatrixState> {
 
   Result resetMatrixAfterRunning() {
     print("RESetting....");
-    if (state is DisplayMatrix) {
+    if (state is DisplayMatrix && !(state as DisplayMatrix).isVisualizing) {
       final matrix = (state as DisplayMatrix).matrix;
       for (var i = 0; i < matrix.length; i++) {
         for (var j = 0; j < matrix[0].length; j++) {
