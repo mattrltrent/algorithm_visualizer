@@ -57,7 +57,7 @@ class MatrixCubit extends Cubit<MatrixState> {
       if (sqrt(pow(start.x - end.x, 2) + pow(start.y - end.y, 2)) < n / 1.2) {
         continue;
       }
-      if (Bfs().run(matrix.map((row) => row.map((node) => node.clone()).toList()).toList(), start, end).pathFound) {
+      if (Bfs().run(matrix.map((row) => row.map((node) => node.deepCopy()).toList()).toList(), start, end).pathFound) {
         invalidMaze = false;
       }
     }
@@ -145,7 +145,7 @@ class MatrixCubit extends Cubit<MatrixState> {
       for (var i = 0; i < matrix.length; i++) {
         for (var j = 0; j < matrix[0].length; j++) {
           if (matrix[i][j].type == NodeType.visited || matrix[i][j].type == NodeType.path) {
-            setNode(i, j, const Node(NodeType.cell, delay: Duration.zero), true);
+            // setNode(i, j, const Node(NodeType.cell));
           }
         }
       }

@@ -21,7 +21,7 @@ class DisplayMatrix extends MatrixState {
   });
 
   DisplayMatrix clone() {
-    final clonedMatrix = matrix.map((row) => row.map((node) => node.clone()).toList()).toList();
+    final clonedMatrix = matrix.map((row) => row.map((node) => node.deepCopy()).toList()).toList();
     return DisplayMatrix(matrix: clonedMatrix, updateFlag: !updateFlag, isVisualizing: isVisualizing);
   }
 

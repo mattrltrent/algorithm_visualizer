@@ -3,10 +3,11 @@ import 'package:algorithm_visualizer/domain/cubit/user_cubit.dart';
 import 'package:algorithm_visualizer/presentation/views/home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'dep_inj.dart';
 
-void main() async => await init().then((_) => runApp(const MyApp()));
+void main() async => await init().then((_) => runApp(const ProviderScope(child: MyApp())));
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

@@ -4,10 +4,9 @@ import 'package:flutter/material.dart';
 import '../../domain/entities/node.dart';
 
 class NodeGridItem extends StatefulWidget {
-  const NodeGridItem({super.key, required this.matrix, required this.node, required this.row, required this.col});
+  const NodeGridItem({super.key, required this.node, required this.row, required this.col});
 
   final Node node;
-  final List<List<Node>> matrix;
   final int row;
   final int col;
 
@@ -31,7 +30,7 @@ class _NodeGridItemState extends State<NodeGridItem> {
   }
 
   void updateTile() async {
-    if (widget.node.delay != Duration.zero) await Future.delayed(widget.node.delay);
+    // if (widget.node.delay != Duration.zero) await Future.delayed(widget.node.delay);
     if (mounted) {
       setState(() {
         currColor = widget.node.type.color;
@@ -55,14 +54,6 @@ class _NodeGridItemState extends State<NodeGridItem> {
           left: BorderSide(
             color: Colors.black.withOpacity(0.5),
             width: widget.col == 0 ? 0.5 : 0,
-          ),
-          right: BorderSide(
-            color: Colors.black.withOpacity(0.5),
-            width: widget.col == widget.matrix[0].length - 1 ? 0.5 : 0,
-          ),
-          bottom: BorderSide(
-            color: Colors.black.withOpacity(0.5),
-            width: widget.row == widget.matrix.length - 1 ? 0.5 : 0,
           ),
         ),
       ),
