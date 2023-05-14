@@ -58,7 +58,7 @@ class Dfs implements Algorithm {
       }
       return true;
     }
-    matrix[node.point.x][node.point.y] = const Node(NodeType.visited);
+    matrix[node.point.x][node.point.y] = Node(NodeType.visited, matrix[0][0].key);
     update_list.add(MatrixUpdate(row: node.point.x, col: node.point.y, updatedTo: NodeType.visited));
     for (Point<int> next in adjcent_Moves) {
       //add every adjcent node to the queue.

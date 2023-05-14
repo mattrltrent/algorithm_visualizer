@@ -7,15 +7,6 @@ import 'package:dartz/dartz.dart';
 import '../core/results.dart';
 import '../domain/entities/node.dart';
 
-class BfsNode extends Node {
-  @override
-  final NodeType type;
-  final Point<int>? parent;
-  const BfsNode(this.type, this.parent) : super(type);
-  @override
-  List<Object?> get props => [type, parent];
-}
-
 class PointNode {
   final Point<int> point;
   final PointNode? parent;
@@ -69,7 +60,7 @@ class Bfs implements Algorithm {
         futureNodes.add(PointNode(Point(current.point.x + next.x, current.point.y + next.y), current));
       }
       //Set Current Node to be visited.
-      matrix[current.point.x][current.point.y] = const Node(NodeType.visited);
+      matrix[current.point.x][current.point.y] = Node(NodeType.visited, matrix[0][0].key);
     }
 
     //! Return No Path

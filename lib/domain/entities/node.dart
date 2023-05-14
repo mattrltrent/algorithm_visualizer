@@ -12,13 +12,15 @@ enum NodeType {
 
 class Node extends Equatable {
   final NodeType type;
+  final Duration delay;
+  final UniqueKey key;
 
-  const Node(this.type);
+  const Node(this.type, this.key, {this.delay = Duration.zero});
 
-  Node deepCopy() => Node(type);
+  Node deepCopy() => Node(type, key);
 
   @override
-  List<Object?> get props => [type];
+  List<Object?> get props => [type, delay];
 }
 
 extension NodeTypeColor on NodeType {

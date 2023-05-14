@@ -19,7 +19,7 @@ class MatrixCubit extends Cubit<MatrixState> {
   MatrixCubit() : super(LoadingMatrix());
 
   void initMatrix({int n = 10}) {
-    final matrix = List.generate(n, (_) => List.generate(n, (_) => const Node(NodeType.cell)));
+    final matrix = List.generate(n, (_) => List.generate(n, (_) => Node(NodeType.cell, UniqueKey())));
     emit(DisplayMatrix(matrix: matrix, updateFlag: false, isVisualizing: false));
   }
 
@@ -32,9 +32,9 @@ class MatrixCubit extends Cubit<MatrixState> {
         n,
         (_) {
           if ((random.nextInt(3)) == 1) {
-            return const Node(NodeType.wall);
+            return Node(NodeType.wall, UniqueKey());
           } else {
-            return const Node(NodeType.cell);
+            return Node(NodeType.cell, UniqueKey());
           }
         },
       ),
@@ -44,16 +44,16 @@ class MatrixCubit extends Cubit<MatrixState> {
           n,
           (_) => List.generate(n, (_) {
                 if ((random.nextInt(3)) == 1) {
-                  return const Node(NodeType.wall);
+                  return Node(NodeType.wall, UniqueKey());
                 } else {
-                  return const Node(NodeType.cell);
+                  return Node(NodeType.cell, UniqueKey());
                 }
               }));
       Point<int> start = Point(random.nextInt(n), random.nextInt(n));
       Point<int> end = Point(random.nextInt(n), random.nextInt(n));
 
-      matrix[start.x][start.y] = const Node(NodeType.start);
-      matrix[end.x][end.y] = const Node(NodeType.end);
+      matrix[start.x][start.y] = Node(NodeType.start, UniqueKey());
+      matrix[end.x][end.y] = Node(NodeType.end, UniqueKey());
       if (sqrt(pow(start.x - end.x, 2) + pow(start.y - end.y, 2)) < n / 1.2) {
         continue;
       }
@@ -126,9 +126,9 @@ class MatrixCubit extends Cubit<MatrixState> {
 
     for (final update in path) {
       if (update.updatedTo == NodeType.path) {
-        setNode(update.row, update.col, Node(update.updatedTo), true);
+        setNode(update.row, update.col, Node(update.updatedTo, UniqueKey()), true);
       } else {
-        setNode(update.row, update.col, Node(update.updatedTo), true);
+        setNode(update.row, update.col, Node(update.updatedTo, UniqueKey()), true);
       }
       await Future.delayed(const Duration(milliseconds: 1));
     }

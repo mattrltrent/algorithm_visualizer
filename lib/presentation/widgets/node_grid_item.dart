@@ -1,9 +1,11 @@
+import 'package:algorithm_visualizer/store.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/node.dart';
 
-class NodeGridItem extends StatefulWidget {
+class NodeGridItem extends ConsumerStatefulWidget {
   const NodeGridItem({super.key, required this.node, required this.row, required this.col});
 
   final Node node;
@@ -11,10 +13,10 @@ class NodeGridItem extends StatefulWidget {
   final int col;
 
   @override
-  State<NodeGridItem> createState() => _NodeGridItemState();
+  NodeGridItemState createState() => NodeGridItemState();
 }
 
-class _NodeGridItemState extends State<NodeGridItem> {
+class NodeGridItemState extends ConsumerState<NodeGridItem> {
   late Color currColor;
 
   @override
@@ -29,8 +31,13 @@ class _NodeGridItemState extends State<NodeGridItem> {
     updateTile();
   }
 
+  // todo: KEY matching against store key after future delayed
   void updateTile() async {
-    // if (widget.node.delay != Duration.zero) await Future.delayed(widget.node.delay);
+    // print('updateTile : ${UniqueKey()}');
+    if (widget.node.delay != Duration.zero) {
+      await Future.delayed(widget.node.delay);
+    }
+    if (ref.read(matrixProvider).key.toString() != widget.node.key.toString()) return;
     if (mounted) {
       setState(() {
         currColor = widget.node.type.color;

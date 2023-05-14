@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:algorithm_visualizer/algorithms/bfs.dart';
 import 'package:algorithm_visualizer/domain/cubit/matrix_cubit.dart';
 import 'package:algorithm_visualizer/domain/cubit/user_cubit.dart';
+import 'package:algorithm_visualizer/domain/entities/algorithm.dart';
 import 'package:algorithm_visualizer/presentation/widgets/editor.dart';
 import 'package:algorithm_visualizer/presentation/widgets/node_grid_item.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +12,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/node.dart';
 import '../../store.dart';
 import '../widgets/alert_banner.dart';
+
+Future<void> sleep(int durationMs) {
+  final completer = Completer<void>();
+  Timer(Duration(milliseconds: durationMs), completer.complete);
+  return completer.future;
+}
 
 class HomeView extends ConsumerStatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -27,13 +36,22 @@ class HomeViewState extends ConsumerState<HomeView> {
 
   Offset _previousLocalPos = const Offset(-1000, -1000);
 
-  void runAlgo(BuildContext context) {
-    ref.read(matrixProvider).exists(NodeType.start).fold(
-          (_) => showAlert(context, "No start point found.", true),
-          (startPoint) => ref
+  void runAlgo(BuildContext context) async {
+    // ref.read(matrixProvider).setVisualizing(true);
+    if (ref.read(matrixProvider).isVisualizing) return;
+    // ref.read(matrixProvider.notifier).genNewKey();
+    print("running anway");
+    ref.read(matrixProvider).setVisualizing(true);
+    ref.read(matrixProvider.notifier).clearPathfinding();
+    await Future.delayed(const Duration(milliseconds: 50));
+    setState(() {});
+    // UniqueKey currentKey = ref.read(matrixProvider).key;
+    await ref.read(matrixProvider).exists(NodeType.start).fold(
+          (_) async => showAlert(context, "No start point found.", true),
+          (startPoint) async => ref
               .read(matrixProvider)
               .exists(NodeType.end)
-              .fold((_) => showAlert(context, "No end point found.", true), (endPoint) async {
+              .fold((_) async => showAlert(context, "No end point found.", true), (endPoint) async {
             final stats =
                 Bfs().clone().run(ref.read(matrixProvider.notifier).deepCopy().matrixElements, startPoint, endPoint);
             int pathLength = stats.path.where((e) => e.updatedTo == NodeType.path).toList().length;
@@ -49,18 +67,43 @@ class HomeViewState extends ConsumerState<HomeView> {
                   "No path found in ${stats.timeTakenMicroSec.toString()} μs. Checked ${stats.path.length - pathLength} ${isSingular ? "node" : "nodes"}.",
                   true);
             }
-            for (final update in stats.path) {
-              await Future.delayed(const Duration(milliseconds: 1));
-              ref.read(matrixProvider.notifier).set(update.row, update.col, Node(update.updatedTo));
+            //! Matt
+            int iter = 0;
+            int delayMultiplier = 100;
+            final List<MatrixUpdate> solutionPath = [];
+            ref.read(matrixProvider.notifier).genNewKey();
+            UniqueKey currentKey = ref.read(matrixProvider).key;
+            for (final node in stats.path) {
+              if (node.updatedTo == NodeType.path) {
+                solutionPath.add(node);
+              } else {
+                ref.read(matrixProvider).set(node.row, node.col,
+                    Node(node.updatedTo, currentKey, delay: Duration(milliseconds: delayMultiplier * iter)));
+                iter += 1;
+              }
+              setState(() {});
             }
+            await Future.delayed(Duration(milliseconds: delayMultiplier * iter));
+            iter = 0;
+            for (final node in solutionPath) {
+              ref.read(matrixProvider).set(node.row, node.col,
+                  Node(node.updatedTo, currentKey, delay: Duration(milliseconds: delayMultiplier * iter)));
+              iter += 1;
+              setState(() {});
+            }
+            await Future.delayed(Duration(milliseconds: delayMultiplier * iter));
+            ref.read(matrixProvider).setVisualizing(false);
           }),
         );
+    ref.read(matrixProvider).setVisualizing(false);
   }
 
   void paintNode(Offset localPos, Matrix matrix, double itemSize) {
     final row = (localPos.dy / itemSize).floor().clamp(0, matrix.rows - 1);
     final col = (localPos.dx / itemSize).floor().clamp(0, matrix.cols - 1);
     final currentLocalPos = Offset(row.toDouble(), col.toDouble());
+
+    UniqueKey currentKey = ref.read(matrixProvider).key;
 
     if (_previousLocalPos == currentLocalPos) return;
     _previousLocalPos = currentLocalPos;
@@ -70,17 +113,17 @@ class HomeViewState extends ConsumerState<HomeView> {
       case NodeType.start:
       case NodeType.end:
         ref.read(matrixProvider).exists(selectedNodeType).fold(
-          (_) => ref.read(matrixProvider.notifier).set(row, col, Node(selectedNodeType)),
+          (_) => ref.read(matrixProvider.notifier).set(row, col, Node(selectedNodeType, currentKey)),
           (point) {
-            ref.read(matrixProvider.notifier).set(point.x, point.y, const Node(NodeType.cell));
-            ref.read(matrixProvider.notifier).set(row, col, Node(selectedNodeType));
+            ref.read(matrixProvider.notifier).set(point.x, point.y, Node(NodeType.cell, currentKey));
+            ref.read(matrixProvider.notifier).set(row, col, Node(selectedNodeType, currentKey));
           },
         );
         break;
       case NodeType.wall:
         ref.read(matrixProvider).type(row, col) == NodeType.wall
-            ? ref.read(matrixProvider.notifier).set(row, col, const Node(NodeType.cell))
-            : ref.read(matrixProvider.notifier).set(row, col, Node(selectedNodeType));
+            ? ref.read(matrixProvider.notifier).set(row, col, Node(NodeType.cell, currentKey))
+            : ref.read(matrixProvider.notifier).set(row, col, Node(selectedNodeType, currentKey));
         break;
       default:
     }

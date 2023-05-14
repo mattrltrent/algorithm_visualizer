@@ -7,15 +7,17 @@ import 'package:algorithm_visualizer/presentation/widgets/alert_banner.dart';
 import 'package:algorithm_visualizer/presentation/widgets/node_pallet.dart';
 import 'package:algorithm_visualizer/presentation/widgets/primary_button.dart';
 import 'package:algorithm_visualizer/presentation/widgets/touchable_opacity.dart';
+import 'package:algorithm_visualizer/store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../domain/cubit/matrix_cubit.dart';
 import '../../domain/cubit/user_cubit.dart';
 import 'dropdown.dart';
 
-class Editor extends StatefulWidget {
+class Editor extends ConsumerStatefulWidget {
   const Editor({Key? key, required this.runAlgorithm}) : super(key: key);
 
   final VoidCallback runAlgorithm;
@@ -24,7 +26,7 @@ class Editor extends StatefulWidget {
   EditorState createState() => EditorState();
 }
 
-class EditorState extends State<Editor> {
+class EditorState extends ConsumerState<Editor> {
   List<Algorithm> algorithms = [Bfs(), Dfs()];
   List<Speed> speed = [Speed.slow, Speed.medium, Speed.fast];
   List<int> nSizeMatrix = [5, 10, 20, 30, 40];
@@ -35,7 +37,7 @@ class EditorState extends State<Editor> {
       if (!await launchUrl(_url)) {
         throw Exception('Could not launch $_url');
       }
-    } catch (e) {
+    } catch (_) {
       showAlert(context, "Unable to open link.", true);
     }
   }
@@ -78,13 +80,13 @@ class EditorState extends State<Editor> {
               PrimaryButton(text: "Run algorithm", onTap: () => widget.runAlgorithm()),
               PrimaryButton(
                 text: "Clear path",
-                onTap: () => context.read<MatrixCubit>().resetMatrixAfterRunning(),
+                onTap: () => ref.read(matrixProvider.notifier).clearPathfinding(),
               ),
               PrimaryButton(
                   text: "Randomize map",
                   onTap: () {
                     int matrixSize = (context.read<UserCubit>().state as UserPrefs).nSizeMatrix;
-                    context.read<MatrixCubit>().initMap(n: matrixSize);
+                    ref.read(matrixProvider.notifier).initMap(n: matrixSize);
                   }),
               PrimaryButton(text: "PRINT MATRIX", onTap: () => context.read<MatrixCubit>().printBoard()),
               AppleDropdown(
